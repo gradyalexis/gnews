@@ -31,21 +31,24 @@ export default function CategoryFilter({ className }: CategoryFilterProps) {
   };
 
   return (
-    <div className={cn("flex flex-wrap gap-2", className)}>
-      {categories.map((cat) => (
-        <button
-          key={cat.id}
-          onClick={() => handleCategoryChange(cat.id)}
-          className={cn(
-            "rounded-full px-4 py-1.5 text-sm font-medium transition-all backdrop-blur-sm",
-            activeCategory === cat.id
-              ? "bg-white/20 text-white shadow-lg shadow-white/5 ring-1 ring-white/30"
-              : "border border-white/10 bg-white/5 text-zinc-300 hover:bg-white/10 hover:text-white hover:border-white/20"
-          )}
-        >
-          {cat.label}
-        </button>
-      ))}
+    <div className={cn("-mx-4 overflow-x-auto px-4 scrollbar-hide", className)}>
+      <div className="flex items-center gap-1">
+        {categories.map((cat) => (
+          <button
+            key={cat.id}
+            onClick={() => handleCategoryChange(cat.id)}
+            className={cn(
+              "relative whitespace-nowrap px-4 py-2 text-[13px] font-medium tracking-wide transition-colors",
+              activeCategory === cat.id ? "text-white" : "text-white/40 hover:text-white/70"
+            )}
+          >
+            {cat.label}
+            {activeCategory === cat.id && (
+              <span className="absolute bottom-0 left-2 right-2 h-px bg-white/60" />
+            )}
+          </button>
+        ))}
+      </div>
     </div>
   );
 }

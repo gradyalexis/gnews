@@ -33,55 +33,67 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
   const articles = results.articles || [];
 
   return (
-    <div className="flex flex-1 flex-col">
-      <section className="border-b border-white/10 py-10 backdrop-blur-sm">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <AnimatedSection>
-            <h1 className="mb-6 text-3xl font-bold tracking-tight text-white">
-              Search News
+    <div className="flex flex-1 flex-col pt-24 md:pt-28">
+      <section className="relative px-4 pb-12 pt-8 sm:px-6 md:pb-16">
+        <div className="mx-auto max-w-7xl">
+          <AnimatedSection className="mb-8 text-center">
+            <h1 className="font-[family-name:var(--font-playfair)] text-[clamp(2rem,5vw,3.5rem)] font-bold leading-[0.95] tracking-tight text-white">
+              Search
             </h1>
-            <SearchBar initialQuery={query} />
+            <p className="mx-auto mt-4 max-w-md text-sm font-light tracking-wide text-white/40">
+              Discover stories across millions of articles from trusted sources worldwide.
+            </p>
           </AnimatedSection>
+          <div className="mx-auto flex max-w-lg justify-center">
+            <SearchBar initialQuery={query} />
+          </div>
         </div>
       </section>
 
       <main className="mx-auto w-full max-w-7xl flex-1 px-4 py-8 sm:px-6 lg:px-8">
         {query && (
-          <div className="mb-6 flex items-center justify-between">
-            <p className="text-sm text-zinc-400">
-              Results for <span className="font-semibold text-white">"{query}"</span>
-            </p>
-            <span className="text-sm text-zinc-400">
+          <AnimatedSection className="mb-8 flex items-end justify-between border-b border-white/[0.06] pb-4">
+            <div>
+              <span className="mb-1 block text-[11px] font-medium uppercase tracking-[0.2em] text-white/30">
+                Search Results
+              </span>
+              <p className="text-sm text-white/60">
+                for <span className="font-medium text-white/90">"{query}"</span>
+              </p>
+            </div>
+            <span className="mb-1 text-xs font-light text-white/30">
               {results.totalResults?.toLocaleString()} found
             </span>
-          </div>
+          </AnimatedSection>
         )}
 
         {articles.length === 0 ? (
-          <div className="flex flex-col items-center justify-center rounded-2xl border border-white/10 bg-white/5 py-24 backdrop-blur-md">
-            {query ? (
-              <>
-                <SearchX className="mb-4 h-12 w-12 text-zinc-500" />
-                <p className="text-lg font-medium text-white">
-                  No results found
-                </p>
-                <p className="mt-1 text-sm text-zinc-400">
-                  Try a different search term
-                </p>
-              </>
-            ) : (
-              <>
-                <p className="text-lg font-medium text-white">
-                  Enter a search term to find articles
-                </p>
-                <p className="mt-1 text-sm text-zinc-400">
-                  Search across millions of news articles worldwide
-                </p>
-              </>
-            )}
-          </div>
+          <AnimatedSection>
+            <div className="flex flex-col items-center justify-center rounded-3xl border border-white/[0.06] bg-white/[0.02] py-24 backdrop-blur-md">
+              {query ? (
+                <>
+                  <SearchX className="mb-4 h-10 w-10 text-white/20" />
+                  <p className="font-[family-name:var(--font-playfair)] text-lg font-medium text-white/80">
+                    No results found
+                  </p>
+                  <p className="mt-1 text-sm text-white/30">
+                    Try a different search term
+                  </p>
+                </>
+              ) : (
+                <>
+                  <p className="font-[family-name:var(--font-playfair)] text-lg font-medium text-white/80">
+                    Enter a search term
+                  </p>
+                  <p className="mt-1 text-sm text-white/30">
+                    Search across millions of news articles worldwide
+                  </p>
+                </>
+              )}
+            </div>
+          </AnimatedSection>
         ) : (
-          <StaggerContainer className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          <StaggerContainer className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
             {articles.map((article, index) => (
               <StaggerItem key={`${article.url}-${index}`}>
                 <NewsCard

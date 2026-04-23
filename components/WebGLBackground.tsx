@@ -1,14 +1,14 @@
 "use client";
 
-import { Canvas, useFrame } from "@react-three/fiber";
-import { useMemo, useRef } from "react";
+import { Canvas, useFrame, useThree } from "@react-three/fiber";
+import { useMemo, useRef, useCallback } from "react";
 import * as THREE from "three";
 
 const vertexShader = `
   varying vec2 vUv;
   void main() {
     vUv = uv;
-    gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+    gl_Position = vec4(position, 1.0);
   }
 `;
 
@@ -17,60 +17,76 @@ const fragmentShader = `
   uniform vec2 u_resolution;
   varying vec2 vUv;
 
-  // Simplex noise helper
-  vec3 mod289(vec3 x) { return x - floor(x * (1.0 / 289.0)) * 289.0; }
-  vec2 mod289(vec2 x) { return x - floor(x * (1.0 / 289.0)) * 289.0; }
-  vec3 permute(vec3 x) { return mod289(((x*34.0)+1.0)*x); }
+  // Pseudo-random
+  float hash(vec2 p) {
+    return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453);
+  }
 
-  float snoise(vec2 v) {
-    const vec4 C = vec4(0.211324865405187, 0.366025403784439,
-             -0.577350269189626, 0.024390243902439);
-    vec2 i  = floor(v + dot(v, C.yy));
-    vec2 x0 = v -   i + dot(i, C.xx);
-    vec2 i1;
-    i1 = (x0.x > x0.y) ? vec2(1.0, 0.0) : vec2(0.0, 1.0);
-    vec4 x12 = x0.xyxy + C.xxzz;
-    x12.xy -= i1;
-    i = mod289(i);
-    vec3 p = permute( permute( i.y + vec3(0.0, i1.y, 1.0 ))
-      + i.x + vec3(0.0, i1.x, 1.0 ));
-    vec3 m = max(0.5 - vec3(dot(x0,x0), dot(x12.xy,x12.xy),
-      dot(x12.zw,x12.zw)), 0.0);
-    m = m*m;
-    m = m*m;
-    vec3 x = 2.0 * fract(p * C.www) - 1.0;
-    vec3 h = abs(x) - 0.5;
-    vec3 ox = floor(x + 0.5);
-    vec3 a0 = x - ox;
-    m *= 1.79284291400159 - 0.85373472095314 * ( a0*a0 + h*h );
-    vec3 g;
-    g.x  = a0.x  * x0.x  + h.x  * x0.y;
-    g.yz = a0.yz * x12.xz + h.yz * x12.yw;
-    return 130.0 * dot(m, g);
+  // Simplex-like noise
+  float noise(vec2 p) {
+    vec2 i = floor(p);
+    vec2 f = fract(p);
+    f = f * f * (3.0 - 2.0 * f);
+    float a = hash(i);
+    float b = hash(i + vec2(1.0, 0.0));
+    float c = hash(i + vec2(0.0, 1.0));
+    float d = hash(i + vec2(1.0, 1.0));
+    return mix(mix(a, b, f.x), mix(c, d, f.x), f.y);
+  }
+
+  float fbm(vec2 p) {
+    float v = 0.0;
+    float a = 0.5;
+    vec2 shift = vec2(100.0);
+    mat2 rot = mat2(cos(0.5), sin(0.5), -sin(0.5), cos(0.5));
+    for (int i = 0; i < 6; i++) {
+      v += a * noise(p);
+      p = rot * p * 2.0 + shift;
+      a *= 0.5;
+    }
+    return v;
   }
 
   void main() {
     vec2 uv = vUv;
+    float t = u_time * 0.08;
 
-    float t = u_time * 0.15;
+    // Flow field
+    vec2 q = vec2(0.0);
+    q.x = fbm(uv + t * 0.3);
+    q.y = fbm(uv + vec2(1.0));
 
-    float n1 = snoise(vec2(uv.x * 2.0 + t, uv.y * 2.0 - t * 0.7));
-    float n2 = snoise(vec2(uv.x * 1.5 - t * 0.5, uv.y * 1.5 + t * 0.3));
-    float n3 = snoise(vec2(uv.x * 3.0 + t * 0.3, uv.y * 3.0 + t * 0.2));
+    vec2 r = vec2(0.0);
+    r.x = fbm(uv + 1.0 * q + vec2(1.7, 9.2) + 0.15 * t);
+    r.y = fbm(uv + 1.0 * q + vec2(8.3, 2.8) + 0.126 * t);
 
-    // Subtle dark palette for news site
-    vec3 color1 = vec3(0.03, 0.03, 0.04);   // near black
-    vec3 color2 = vec3(0.06, 0.04, 0.08);   // dark purple
-    vec3 color3 = vec3(0.04, 0.05, 0.07);   // dark blue
-    vec3 accent = vec3(0.08, 0.06, 0.03);    // warm dark
+    float f = fbm(uv + r);
 
-    vec3 col = mix(color1, color2, n1 * 0.5 + 0.5);
-    col = mix(col, color3, n2 * 0.3 + 0.3);
-    col = mix(col, accent, n3 * 0.15);
+    // Editorial palette: deep ink, crimson ember, warm gold, midnight blue
+    vec3 ink = vec3(0.02, 0.02, 0.03);
+    vec3 crimson = vec3(0.35, 0.08, 0.12);
+    vec3 amber = vec3(0.65, 0.40, 0.12);
+    vec3 gold = vec3(0.83, 0.65, 0.22);
+    vec3 midnight = vec3(0.04, 0.03, 0.07);
+    vec3 violet = vec3(0.10, 0.05, 0.15);
 
-    // Very subtle brightness in center
-    float vignette = 1.0 - length(uv - 0.5) * 0.5;
-    col *= 0.8 + vignette * 0.2;
+    vec3 col = ink;
+    col = mix(col, midnight, clamp(f * f * 3.0, 0.0, 1.0));
+    col = mix(col, violet, clamp(length(q), 0.0, 1.0));
+    col = mix(col, crimson, clamp(length(r.x), 0.0, 1.0));
+
+    // Aurora streaks
+    float streak = fbm(vec2(uv.x * 3.0 + t, uv.y * 1.5 - t * 0.5));
+    col = mix(col, amber, streak * 0.25);
+    col = mix(col, gold, streak * streak * 0.15);
+
+    // Vignette
+    float vig = 1.0 - length(uv - 0.5) * 0.6;
+    col *= 0.7 + vig * 0.3;
+
+    // Subtle brightness in center-top
+    float spotlight = 1.0 - length(uv - vec2(0.5, 0.3)) * 0.4;
+    col += vec3(0.01, 0.005, 0.0) * max(spotlight, 0.0);
 
     gl_FragColor = vec4(col, 1.0);
   }
@@ -78,13 +94,14 @@ const fragmentShader = `
 
 function MeshGradient() {
   const meshRef = useRef<THREE.Mesh>(null);
+  const { size } = useThree();
 
   const uniforms = useMemo(
     () => ({
       u_time: { value: 0 },
-      u_resolution: { value: new THREE.Vector2(window.innerWidth, window.innerHeight) },
+      u_resolution: { value: new THREE.Vector2(size.width, size.height) },
     }),
-    []
+    [size.width, size.height]
   );
 
   useFrame((state) => {
@@ -95,12 +112,14 @@ function MeshGradient() {
   });
 
   return (
-    <mesh ref={meshRef} scale={[2, 2, 1]}>
+    <mesh ref={meshRef}>
       <planeGeometry args={[2, 2]} />
       <shaderMaterial
         vertexShader={vertexShader}
         fragmentShader={fragmentShader}
         uniforms={uniforms}
+        depthWrite={false}
+        depthTest={false}
       />
     </mesh>
   );
@@ -110,9 +129,11 @@ export default function WebGLBackground() {
   return (
     <div className="fixed inset-0 -z-10">
       <Canvas
-        camera={{ position: [0, 0, 1], fov: 75 }}
-        gl={{ antialias: false, alpha: false }}
+        orthographic
+        camera={{ zoom: 1, position: [0, 0, 1] }}
+        gl={{ antialias: false, alpha: false, depth: false }}
         dpr={[1, 1.5]}
+        style={{ position: "absolute", inset: 0 }}
       >
         <MeshGradient />
       </Canvas>

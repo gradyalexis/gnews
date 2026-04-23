@@ -22,22 +22,16 @@ export default function SearchBar({ initialQuery = "", className }: SearchBarPro
   };
 
   return (
-    <form onSubmit={handleSubmit} className={cn("relative w-full max-w-2xl", className)}>
+    <form onSubmit={handleSubmit} className={cn("relative w-full max-w-xl", className)}>
       <div className="relative">
-        <Search className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-zinc-400" />
+        <Search className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-white/30 transition-colors focus-within:text-white/50" />
         <input
           type="text"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          placeholder="Search news articles..."
-          className="h-12 w-full rounded-xl border border-white/20 bg-white/10 pl-11 pr-24 text-base text-white shadow-lg shadow-black/5 backdrop-blur-md transition-all placeholder:text-zinc-400 focus:border-white/40 focus:outline-none focus:ring-2 focus:ring-white/20"
+          placeholder="Search news..."
+          className="h-11 w-full rounded-full border border-white/[0.08] bg-white/[0.04] pl-11 pr-5 text-sm font-light tracking-wide text-white shadow-lg shadow-black/5 backdrop-blur-xl transition-all placeholder:text-white/25 focus:border-white/20 focus:bg-white/[0.06] focus:outline-none focus:ring-1 focus:ring-white/10"
         />
-        <button
-          type="submit"
-          className="absolute right-2 top-1/2 -translate-y-1/2 rounded-lg bg-white/20 px-4 py-1.5 text-sm font-medium text-white backdrop-blur-sm transition-all hover:bg-white/30 hover:shadow-lg"
-        >
-          Search
-        </button>
       </div>
     </form>
   );

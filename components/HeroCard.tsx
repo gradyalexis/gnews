@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { Calendar, ArrowRight } from "lucide-react";
+import { Calendar, ArrowUpRight } from "lucide-react";
 import { format } from "date-fns";
 import { motion } from "framer-motion";
 
@@ -27,21 +27,22 @@ export default function HeroCard({
 
   return (
     <motion.div
-      whileHover={{ y: -4 }}
-      transition={{ type: "spring", stiffness: 300, damping: 25 }}
+      whileHover={{ y: -6 }}
+      transition={{ type: "spring", stiffness: 300, damping: 30 }}
+      className="group"
     >
       <Link
         href={url}
         target="_blank"
         rel="noopener noreferrer"
-        className="group relative flex w-full flex-col overflow-hidden rounded-2xl border border-white/10 bg-white/10 backdrop-blur-xl transition-all hover:shadow-2xl hover:shadow-black/20 lg:flex-row"
+        className="relative flex w-full flex-col overflow-hidden rounded-3xl border border-white/[0.06] bg-white/[0.02] backdrop-blur-sm transition-colors hover:border-white/[0.12] lg:flex-row lg:max-h-[540px]"
       >
-        <div className="relative aspect-[16/10] w-full overflow-hidden lg:aspect-auto lg:w-3/5">
+        <div className="relative aspect-[16/10] w-full overflow-hidden lg:aspect-auto lg:w-[62%]">
           {urlToImage ? (
             <motion.div
               className="relative h-full w-full"
-              whileHover={{ scale: 1.03 }}
-              transition={{ duration: 0.6, ease: "easeOut" }}
+              whileHover={{ scale: 1.04 }}
+              transition={{ duration: 0.8, ease: [0.25, 0.1, 0.25, 1] }}
             >
               <Image
                 src={urlToImage}
@@ -53,34 +54,42 @@ export default function HeroCard({
               />
             </motion.div>
           ) : (
-            <div className="flex h-full w-full items-center justify-center bg-zinc-100/20">
-              <span className="text-sm text-zinc-400">No image available</span>
+            <div className="flex h-full w-full items-center justify-center bg-white/[0.03]">
+              <span className="text-sm text-white/30">No image available</span>
             </div>
           )}
+          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent lg:bg-gradient-to-r lg:from-transparent lg:via-transparent lg:to-black/40" />
         </div>
-        <div className="flex flex-1 flex-col justify-center p-6 sm:p-8 lg:p-10">
-          <div className="mb-3 flex items-center gap-3">
-            <span className="rounded-full bg-white/20 px-3 py-1 text-xs font-semibold text-white backdrop-blur-sm">
+
+        <div className="relative flex flex-1 flex-col justify-end p-6 sm:p-8 lg:justify-center lg:p-10">
+          <div className="mb-4 flex items-center gap-3">
+            <span className="rounded-full border border-white/[0.08] bg-white/[0.05] px-3 py-1 text-[11px] font-semibold uppercase tracking-widest text-white/60 backdrop-blur-md">
               Top Story
             </span>
-            <span className="text-xs font-medium text-zinc-300">
+            <span className="h-px w-6 bg-white/20" />
+            <span className="text-xs font-medium uppercase tracking-wider text-white/40">
               {source}
             </span>
           </div>
-          <h1 className="mb-3 text-2xl font-bold leading-tight text-white transition-colors group-hover:text-zinc-200 sm:text-3xl lg:text-4xl">
+
+          <h1 className="font-[family-name:var(--font-playfair)] text-2xl font-bold leading-[1.15] text-white sm:text-3xl lg:text-[2.75rem] lg:leading-[1.1]">
             {title}
           </h1>
-          <p className="mb-6 line-clamp-3 text-base leading-relaxed text-zinc-300">
-            {description || "No description available"}
-          </p>
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2 text-sm text-zinc-400">
-              <Calendar className="h-4 w-4" />
-              <span>{format(date, "MMMM d, yyyy")}</span>
+
+          {description && (
+            <p className="mt-4 line-clamp-3 text-sm leading-relaxed text-white/50 sm:text-base lg:max-w-md">
+              {description}
+            </p>
+          )}
+
+          <div className="mt-6 flex items-center justify-between lg:mt-8">
+            <div className="flex items-center gap-2 text-xs text-white/40">
+              <Calendar className="h-3.5 w-3.5" />
+              <span className="uppercase tracking-wider">{format(date, "MMMM d, yyyy")}</span>
             </div>
-            <span className="flex items-center gap-1 text-sm font-medium text-white transition-transform group-hover:translate-x-1">
-              Read more <ArrowRight className="h-4 w-4" />
-            </span>
+            <div className="flex h-9 w-9 items-center justify-center rounded-full border border-white/10 bg-white/5 backdrop-blur-md transition-all group-hover:bg-white/10 group-hover:border-white/20">
+              <ArrowUpRight className="h-4 w-4 text-white/60 transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
+            </div>
           </div>
         </div>
       </Link>
